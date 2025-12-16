@@ -15,7 +15,7 @@ export default function MazeGame() {
   const [playerPos, setPlayerPos] = useState<Position>({ x: 1, y: 1 });
   const [endPos, setEndPos] = useState<Position>({ x: 0, y: 0 });
   const [trail, setTrail] = useState<Set<string>>(new Set());
-  const [autoMoving, setAutoMoving] = useState(false);
+  const [ifAutoMoving, setIfAutoMoving] = useState(false);
   const [autoFinished, setAutoFinished] = useState(false);
   const activeDirectionRef = useRef<Direction | null>(null);
   const autoPathRef = useRef<Position[]>([]);
@@ -39,7 +39,7 @@ export default function MazeGame() {
     setPlayerPos({ x: 1, y: 1 }); // 重置玩家位置到起点
     setEndPos({ x: MAZE_WIDTH - 2, y: MAZE_HEIGHT - 2 }); // 设置终点位置
     setTrail(new Set());
-    setAutoMoving(false);
+    setIfAutoMoving(false);
     setAutoFinished(false);
     autoPathRef.current = [];
     if (autoTimerRef.current) {
@@ -58,9 +58,9 @@ export default function MazeGame() {
   /**
    * 检查是否可以移动到指定位置
    */
-  const canMove = useCallback(
+  const ifCanMove = useCallback(
     (x: number, y: number): boolean => {
-      if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) {
+      if (x < 0 || x >= MAZE_WIDTH - 1 || y < 0 || y >= MAZE_HEIGHT - 1) {
         return false;
       }
       // maze[x][y] 直接对应坐标 (x, y)
@@ -74,7 +74,7 @@ export default function MazeGame() {
    */
   const movePlayer = useCallback(
     (direction: Direction) => {
-      if (autoMoving) return;
+      if (ifAutoMoving) return;
       setPlayerPos((prev) => {
         let newX = prev.x;
         let newY = prev.y;
@@ -94,13 +94,13 @@ export default function MazeGame() {
             break;
         }
 
-        if (canMove(newX, newY)) {
+        if (ifCanMove(newX, newY)) {
           return { x: newX, y: newY };
         }
         return prev;
       });
     },
-    [canMove, autoMoving]
+    [ifCanMove, ifAutoMoving]
   );
 
   /**
@@ -128,28 +128,28 @@ export default function MazeGame() {
           return null;
       }
     };
-
+    // 处理键盘按下后的调用movePlayer进行真正玩家移动
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (autoMoving) return;
+      if (ifAutoMoving) return;
       const direction = keyToDirection(e.key);
       if (!direction) return;
-      e.preventDefault();
+      e.preventDefault();  //防止你的方向键去上下滚动网页， 只对游戏进行操作
       // 记录当前方向并立即移动一次，避免键盘重复的起始延迟
       activeDirectionRef.current = direction;
       movePlayer(direction);
     };
-
+    // 处理键盘回弹后的移动停止
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (autoMoving) return;
+      if (ifAutoMoving) return;
       const direction = keyToDirection(e.key);
       if (!direction) return;
       e.preventDefault();
-      // 仅当松开的方向与当前方向一致时，停止持续移动
+      // 仅当之前记录的按下的方向和现在抬起的方向一致时，才停止持续移动
       if (activeDirectionRef.current === direction) {
-        activeDirectionRef.current = null;
+        activeDirectionRef.current = null; //清空记录值， 准备下一次的按下记录
       }
     };
-
+    //监听键盘变化， 使用对应的处理函数 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
@@ -164,7 +164,7 @@ export default function MazeGame() {
   useEffect(() => {
     const interval = window.setInterval(() => {
       const direction = activeDirectionRef.current;
-      if (direction && !autoMoving) {
+      if (direction && !ifAutoMoving) {
         movePlayer(direction);
       }
     }, MOVE_INTERVAL_MS);
@@ -172,27 +172,27 @@ export default function MazeGame() {
     return () => {
       window.clearInterval(interval);
     };
-  }, [movePlayer, MOVE_INTERVAL_MS, autoMoving]);
+  }, [movePlayer, MOVE_INTERVAL_MS, ifAutoMoving]);
 
   /**
    * 自动通关：沿路径移动并留下轨迹
    */
   const startAutoSolve = useCallback(() => {
-    if (autoMoving) return;
+    if (ifAutoMoving) return;
     const path = findShortestPath(maze, playerPos, endPos);
     if (path.length === 0) return;
     // 第一格是当前位置，后续为行进路径
     autoPathRef.current = path.slice(1);
     setTrail(new Set([`${playerPos.x},${playerPos.y}`]));
     setAutoFinished(false);
-    setAutoMoving(true);
-  }, [maze, playerPos, endPos, autoMoving]);
+    setIfAutoMoving(true);
+  }, [maze, playerPos, endPos, ifAutoMoving]);
 
   /**
    * 自动通关时的逐步移动
    */
   useEffect(() => {
-    if (!autoMoving) {
+    if (!ifAutoMoving) {
       if (autoTimerRef.current) {
         window.clearInterval(autoTimerRef.current);
         autoTimerRef.current = null;
@@ -203,7 +203,7 @@ export default function MazeGame() {
     autoTimerRef.current = window.setInterval(() => {
       const next = autoPathRef.current.shift();
       if (!next) {
-        setAutoMoving(false);
+        setIfAutoMoving(false);
         setAutoFinished(true);
         if (autoTimerRef.current) {
           window.clearInterval(autoTimerRef.current);
@@ -226,14 +226,14 @@ export default function MazeGame() {
         autoTimerRef.current = null;
       }
     };
-  }, [autoMoving, AUTO_MOVE_MS]);
+  }, [ifAutoMoving, AUTO_MOVE_MS]);
 
   /**
    * 重新挑战：清空轨迹并回到起点
    */
   const retryMaze = useCallback(() => {
     setAutoFinished(false);
-    setAutoMoving(false);
+    setIfAutoMoving(false);
     setTrail(new Set());
     setPlayerPos({ x: 1, y: 1 });
     autoPathRef.current = [];
@@ -291,7 +291,7 @@ export default function MazeGame() {
       <button
         onClick={generateMaze}
         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-        disabled={autoMoving}
+        disabled={ifAutoMoving}
       >
         生成新迷宫
       </button>
@@ -300,7 +300,7 @@ export default function MazeGame() {
       <button
         onClick={startAutoSolve}
         className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-        disabled={autoMoving}
+        disabled={ifAutoMoving}
       >
         一键通关
       </button>
