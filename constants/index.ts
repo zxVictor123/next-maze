@@ -1,5 +1,8 @@
 import { Difficulty } from '@/types';
 
+  export const MOVE_INTERVAL_MS = 70; // 按下方向键后的持续移动间隔
+  export const AUTO_MOVE_MS = 80; // 自动通关时的移动间隔
+
 /**
  * 难度配置
  * 密度越高，迷宫越大，难度越高

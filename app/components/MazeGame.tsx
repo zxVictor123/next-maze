@@ -2,15 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Cell, Position, Direction, Difficulty } from '@/types';
-import { DIFFICULTY_CONFIG } from '@/constants';
+import { DIFFICULTY_CONFIG, MOVE_INTERVAL_MS, AUTO_MOVE_MS } from '@/constants';
 import { generateMazeGrid, findShortestPath } from '@/lib/mazeUtils';
 
 /**
  * 迷宫游戏组件
  */
 export default function MazeGame() {
-  const MOVE_INTERVAL_MS = 70; // 按下方向键后的持续移动间隔
-  const AUTO_MOVE_MS = 80; // 自动通关时的移动间隔
+
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.MEDIUM);
   const [maze, setMaze] = useState<Cell[][]>([]);
   const [playerPos, setPlayerPos] = useState<Position>({ x: 1, y: 1 });
@@ -355,7 +354,7 @@ export default function MazeGame() {
               return (
                 <div
                   key={`${x}-${y}`}
-                  className={`${cellSize === 20 ? 'w-5 h-5' : 'w-[15px] h-[15px]'} flex items-center justify-center ${
+                  className={`${cellSize === 20 ? 'w-5 h-5' : 'w-3.75 h-3.75'} flex items-center justify-center ${
                     cell === 0
                       ? 'bg-gray-800 dark:bg-gray-700'
                       : inTrail
