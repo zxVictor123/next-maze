@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Cell, Position, Direction, Difficulty } from '@/types';
 import { DIFFICULTY_CONFIG, MOVE_INTERVAL_MS, AUTO_MOVE_MS } from '@/constants';
-import { generateMazeGrid, findShortestPath } from '@/lib/mazeUtils';
+import { generateMazeGrid, findShortestPath, keyToDirection } from '@/lib/mazeUtils';
 
 /**
  * 迷宫游戏组件
@@ -31,7 +31,7 @@ export default function MazeGame() {
   };
 
   /**
-   * 生成新迷宫
+   * 定义 生成新迷宫的函数
    */
   const generateMaze = useCallback(() => {
     const newMaze = generateMazeGrid(MAZE_WIDTH, MAZE_HEIGHT, branchConfig);
@@ -49,14 +49,7 @@ export default function MazeGame() {
   }, [MAZE_WIDTH, MAZE_HEIGHT]);
 
   /**
-   * 初始化迷宫和难度改变时重新生成
-   */
-  useEffect(() => {
-    generateMaze();
-  }, [generateMaze, difficulty]);
-
-  /**
-   * 检查是否可以移动到指定位置
+   * 定义 检查是否可以移动到指定位置的函数， 返回布尔值
    */
   const ifCanMove = useCallback(
     (x: number, y: number): boolean => {
@@ -70,7 +63,7 @@ export default function MazeGame() {
   );
 
   /**
-   * 移动玩家
+   * 定义 根据方向移动玩家的函数
    */
   const movePlayer = useCallback(
     (direction: Direction) => {
@@ -104,41 +97,29 @@ export default function MazeGame() {
   );
 
   /**
-   * 键盘事件处理
+   * 调用 生成迷宫函数在初始化迷宫和难度改变时 
    */
   useEffect(() => {
-    /**
-     * 将键值映射为方向
-     */
-    const keyToDirection = (key: string): Direction | null => {
-      switch (key.toLowerCase()) {
-        case 'w':
-        case 'arrowup':
-          return Direction.UP;
-        case 's':
-        case 'arrowdown':
-          return Direction.DOWN;
-        case 'a':
-        case 'arrowleft':
-          return Direction.LEFT;
-        case 'd':
-        case 'arrowright':
-          return Direction.RIGHT;
-        default:
-          return null;
-      }
-    };
-    // 处理键盘按下后的调用movePlayer进行真正玩家移动
+    generateMaze();
+  }, [generateMaze, difficulty]);
+
+  /**
+   * 键盘操控玩家移动的主要过程
+   */
+  useEffect(() => {
+    
+    // 定义 处理键按下时调用movePlayer以移动的函数
     const handleKeyDown = (e: KeyboardEvent) => {
       if (ifAutoMoving) return;
       const direction = keyToDirection(e.key);
       if (!direction) return;
       e.preventDefault();  //防止你的方向键去上下滚动网页， 只对游戏进行操作
-      // 记录当前方向并立即移动一次，避免键盘重复的起始延迟
+      // 记录按下的方向并立即移动一次，避免键盘重复的起始延迟
       activeDirectionRef.current = direction;
       movePlayer(direction);
     };
-    // 处理键盘回弹后的移动停止
+
+    // 定义 处理键盘回弹后的移动停止的函数
     const handleKeyUp = (e: KeyboardEvent) => {
       if (ifAutoMoving) return;
       const direction = keyToDirection(e.key);
@@ -159,7 +140,7 @@ export default function MazeGame() {
   }, [movePlayer]);
 
   /**
-   * 按住方向键持续移动
+   * 负责实现按住方向键持续移动
    */
   useEffect(() => {
     const interval = window.setInterval(() => {

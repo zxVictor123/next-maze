@@ -1,4 +1,4 @@
-import { Cell, Position } from '@/types';
+import { Cell, Position, Direction } from '@/types';
 
 /**
  * Fisher-Yates 洗牌算法
@@ -152,6 +152,28 @@ export const generateMazeGrid = (
 
   return maze;
 };
+
+/**
+     * 定义 将玩家按下的键值映射为方向的函数
+     */
+    export const keyToDirection = (key: string): Direction | null => {
+      switch (key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+          return Direction.UP;
+        case 's':
+        case 'arrowdown':
+          return Direction.DOWN;
+        case 'a':
+        case 'arrowleft':
+          return Direction.LEFT;
+        case 'd':
+        case 'arrowright':
+          return Direction.RIGHT;
+        default:
+          return null;
+      }
+    };
 
 /**
  * 基于 BFS 的最短路径查找
