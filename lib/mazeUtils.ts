@@ -192,9 +192,9 @@ export const findShortestPath = (
       const ny = current.y + dir.y;
       if (
         nx >= 0 &&
-        nx < width &&
+        nx < width - 1 &&
         ny >= 0 &&
-        ny < height &&
+        ny < height - 1 &&
         !visited[nx][ny] &&
         maze[nx]?.[ny] === 1
       ) {
