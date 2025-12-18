@@ -191,7 +191,7 @@ export const findShortestPath = (
   const visited = Array(width)
     .fill(null)
     .map(() => Array(height).fill(false));
-    // 唯一最近先前节点（离起点）
+    // 最近父节点（离起点）
   const prev: (Position | null)[][] = Array(width)
     .fill(null)
     .map(() => Array(height).fill(null));
@@ -216,17 +216,17 @@ export const findShortestPath = (
       const nx = current.x + dir.x;
       const ny = current.y + dir.y;
       if (
-        nx >= 0 &&
+        nx >= 1 &&
         nx < width - 1 &&
-        ny >= 0 &&
+        ny >= 1 &&
         ny < height - 1 &&
         !visited[nx][ny] &&
         maze[nx]?.[ny] === 1
       ) {
         // 当前节点就是新节点的父节点中第一个到达的, 所以是离起点最近的一个父节点, 
-        // 于是我们记录下来, 作为唯一最近先前节点（离起点）, 用于之后回溯道路
+        // 于是我们记录下来, 作为最近父节点（离起点）, 用于之后回溯道路
         prev[nx][ny] = current;
-        // 设置成已经访问过, 防止之后唯一最近先前节点被覆盖
+        // 设置成已经访问过, 防止之后最近父节点被后来的父节点覆盖
         visited[nx][ny] = true; 
         queue.push({ x: nx, y: ny });
       }
