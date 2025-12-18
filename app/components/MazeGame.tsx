@@ -18,7 +18,7 @@ export default function MazeGame() {
   const [ifAutoMoving, setIfAutoMoving] = useState(false);
   const [autoFinished, setAutoFinished] = useState(false);
   const activeDirectionRef = useRef<Direction | null>(null);
-  const autoPathRef = useRef<Position[]>([]);
+  const remainingAutoPathRef = useRef<Position[]>([]);
   const autoTimerRef = useRef<number | null>(null);
 
   // 根据难度获取迷宫大小
@@ -41,7 +41,7 @@ export default function MazeGame() {
     setTrail(new Set());
     setIfAutoMoving(false);
     setAutoFinished(false);
-    autoPathRef.current = [];
+    remainingAutoPathRef.current = [];
     if (autoTimerRef.current) {
       window.clearInterval(autoTimerRef.current);
       autoTimerRef.current = null;
@@ -156,21 +156,21 @@ export default function MazeGame() {
   }, [movePlayer, MOVE_INTERVAL_MS, ifAutoMoving]);
 
   /**
-   * 自动通关：沿路径移动并留下轨迹
+   * 定义 开始自动通关的函数
    */
   const startAutoSolve = useCallback(() => {
     if (ifAutoMoving) return;
     const path = findShortestPath(maze, playerPos, endPos);
     if (path.length === 0) return;
     // 第一格是当前位置，后续为行进路径
-    autoPathRef.current = path.slice(1);
+    remainingAutoPathRef.current = path.slice(1);
     setTrail(new Set([`${playerPos.x},${playerPos.y}`]));
     setAutoFinished(false);
     setIfAutoMoving(true);
   }, [maze, playerPos, endPos, ifAutoMoving]);
 
   /**
-   * 自动通关时的逐步移动
+   * 自动通关时每隔AUTO_MOVE_MS进行一次移动
    */
   useEffect(() => {
     if (!ifAutoMoving) {
@@ -182,7 +182,7 @@ export default function MazeGame() {
     }
 
     autoTimerRef.current = window.setInterval(() => {
-      const next = autoPathRef.current.shift();
+      const next = remainingAutoPathRef.current.shift();
       if (!next) {
         setIfAutoMoving(false);
         setAutoFinished(true);
@@ -193,7 +193,7 @@ export default function MazeGame() {
         return;
       }
 
-      setPlayerPos(next);
+      setPlayerPos(next);     //用next进行移动
       setTrail((prev) => {
         const newTrail = new Set(prev);
         newTrail.add(`${next.x},${next.y}`);
@@ -210,14 +210,14 @@ export default function MazeGame() {
   }, [ifAutoMoving, AUTO_MOVE_MS]);
 
   /**
-   * 重新挑战：清空轨迹并回到起点
+   * 定义 重新挑战：清空轨迹并回到起点的函数
    */
   const retryMaze = useCallback(() => {
     setAutoFinished(false);
     setIfAutoMoving(false);
     setTrail(new Set());
     setPlayerPos({ x: 1, y: 1 });
-    autoPathRef.current = [];
+    remainingAutoPathRef.current = [];
     if (autoTimerRef.current) {
       window.clearInterval(autoTimerRef.current);
       autoTimerRef.current = null;

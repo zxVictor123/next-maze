@@ -70,12 +70,12 @@ const addBranches = (
     { x: -1, y: 0 },
     { x: 1, y: 0 },
   ];
-
+// 定义 判断是否是墙和路的工具
   const isWall = (x: number, y: number) =>
     x >= 0 && x < width && y >= 0 && y < height && maze[x]?.[y] === 0;
   const isPath = (x: number, y: number) =>
     x >= 0 && x < width && y >= 0 && y < height && maze[x]?.[y] === 1;
-
+// 找到所有打通的路格
   for (let i = 0; i < branches; i++) {
     const pathCells: Position[] = [];
     for (let x = 1; x < width - 1; x++) {
@@ -86,8 +86,9 @@ const addBranches = (
       }
     }
     if (pathCells.length === 0) break;
+    // 从已经打通的路格中选一个作为起点供后续打通别的分支
     const start = pathCells[Math.floor(Math.random() * pathCells.length)];
-
+// 打乱方向, 选一个开挖
     const shuffledDirs = [...dirs];
     shuffle(shuffledDirs);
     let chosenDir: Position | null = null;
@@ -98,20 +99,21 @@ const addBranches = (
       }
     }
     if (!chosenDir) continue;
-
+// 确定最终长度以及起点, 准备正式开挖
     const length = Math.floor(Math.random() * branchMaxLength) + 1;
     let cx = start.x;
     let cy = start.y;
+    // 开挖
     for (let step = 0; step < length; step++) {
       const nx = cx + chosenDir.x;
       const ny = cy + chosenDir.y;
       if (!isWall(nx, ny)) break;
       if (nx <= 0 || nx >= width - 1 || ny <= 0 || ny >= height - 1) break;
-
-      const neighborPaths = dirs.filter(
+// 避免挖到已有通路旁边导致死路和通路连接
+      const neighborPathsDirs = dirs.filter(
         (d) => isPath(nx + d.x, ny + d.y) && !(nx + d.x === cx && ny + d.y === cy)
       );
-      if (neighborPaths.length > 0) break;
+      if (neighborPathsDirs.length > 0) break;
 
       maze[nx][ny] = 1;
       cx = nx;
@@ -176,7 +178,7 @@ export const generateMazeGrid = (
     };
 
 /**
- * 基于 BFS 的最短路径查找
+ * 基于 BFS 的最短路径查找, 核心思想:离起点最近的节点先被访问
  */
 export const findShortestPath = (
   maze: Cell[][],
@@ -189,6 +191,7 @@ export const findShortestPath = (
   const visited = Array(width)
     .fill(null)
     .map(() => Array(height).fill(false));
+    // 唯一最近先前节点（离起点）
   const prev: (Position | null)[][] = Array(width)
     .fill(null)
     .map(() => Array(height).fill(null));
@@ -220,8 +223,11 @@ export const findShortestPath = (
         !visited[nx][ny] &&
         maze[nx]?.[ny] === 1
       ) {
-        visited[nx][ny] = true; 
+        // 当前节点就是新节点的父节点中第一个到达的, 所以是离起点最近的一个父节点, 
+        // 于是我们记录下来, 作为唯一最近先前节点（离起点）, 用于之后回溯道路
         prev[nx][ny] = current;
+        // 设置成已经访问过, 防止之后唯一最近先前节点被覆盖
+        visited[nx][ny] = true; 
         queue.push({ x: nx, y: ny });
       }
     }
@@ -237,5 +243,6 @@ export const findShortestPath = (
     path.push(cur);
     cur = prev[cur.x][cur.y];
   }
+  // 倒转， 得到从起点到终点的最短的路径
   return path.reverse();
 };
