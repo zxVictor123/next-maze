@@ -231,7 +231,7 @@ export default function MazeGame() {
   const showCompletionActions = autoFinished || isWin;
 
   return (
-    <div className="flex flex-col items-center gap-6 p-8">
+    <div className="flex flex-col items-center gap-6 p-8 bg-gray-50 opacity-85 border-2">
       <h1 className="text-3xl font-bold mb-4">走迷宫游戏</h1>
       
       {/* 控制说明 */}
