@@ -232,14 +232,15 @@ export default function MazeGame() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-8 bg-gray-50 opacity-85 border-2">
-      <h1 className="text-3xl font-bold mb-4">走迷宫游戏</h1>
+      <h1 className="text-4xl font-bold mb-4">走迷宫游戏</h1>
       
       {/* 控制说明 */}
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
         使用 WASD 或方向键控制移动
       </div>
 
-      {/* 难度选择 */}
+      <div className='w-full flex items-center justify-between'>
+        {/* 难度选择 */}
       <div className="flex flex-col items-center gap-4 mb-4">
         <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
           选择难度：
@@ -271,11 +272,12 @@ export default function MazeGame() {
       {/* 生成新迷宫按钮 */}
       <button
         onClick={generateMaze}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        className="h-12 flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
         disabled={ifAutoMoving}
       >
         生成新迷宫
       </button>
+      </div>
 
       {/* 一键通关 */}
       <button
