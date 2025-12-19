@@ -11,7 +11,7 @@ export const shuffle = <T,>(array: T[]): void => {
 };
 
 /**
- * 递归回溯算法：挖通道
+ * 深度优先递归回溯算法：挖通道
  */
 const carvePassage = (
   x: number,
